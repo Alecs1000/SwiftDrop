@@ -1,10 +1,8 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { LEAD_BLACK, LEAD_BLACK_10, LEAD_BLACK_50, OFFWHITE, HARB_ORANGE } from "../../lib/colors";
+import { mockups } from "../../lib/mockups";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Stage, Layer, Image as KonvaImage, Transformer } from 'react-konva';
 import useImage from 'use-image';
-import { mockups, MockupVariant } from "../../lib/mockups";
 import { v4 as uuidv4 } from 'uuid';
 import CanvasSidebar from '../../components/CanvasSidebar';
 import LeftSidebar from '../../components/LeftSidebar';
@@ -31,48 +29,6 @@ interface CanvasLogo {
   blendMode?: string; // e.g. 'source-over', 'multiply', 'overlay'
 }
 
-// Custom hook to load all logo images for placedLogos
-function useLogoImages(placedLogos: { image: string }[]) {
-  const [images, setImages] = useState<(HTMLImageElement | undefined)[]>([]);
-  useEffect(() => {
-    let isMounted = true;
-    Promise.all(
-      placedLogos.map(
-        logo =>
-          new Promise<HTMLImageElement | undefined>(resolve => {
-            const img = new window.Image();
-            img.crossOrigin = "anonymous";
-            img.onload = () => resolve(img);
-            img.onerror = () => resolve(undefined);
-            img.src = logo.image;
-          })
-      )
-    ).then(loadedImages => {
-      if (isMounted) setImages(loadedImages);
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, [placedLogos.map(l => l.image).join(",")]);
-  return images;
-}
-
-// Utility: fetch SVG and extract first fill color
-async function extractSvgMainColor(svgUrl: string): Promise<string | undefined> {
-  try {
-    const res = await fetch(svgUrl);
-    const text = await res.text();
-    const match = text.match(/fill=["'](#(?:[0-9a-fA-F]{3}){1,2})["']/);
-    if (match) return match[1];
-  } catch {}
-  return undefined;
-}
-
-// Utility: replace all fill colors in SVG with a new color
-function replaceSvgFill(svgText: string, newColor: string): string {
-  return svgText.replace(/fill=["']#(?:[0-9a-fA-F]{3}){1,2}["']/g, `fill=\"${newColor}\"`);
-}
-
 function isSvg(url: string) {
   return url.toLowerCase().endsWith('.svg');
 }
@@ -81,7 +37,7 @@ function svgToDataUrl(svg: string) {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
 }
 
-const CanvasKonvaClient = dynamic(() => import('./CanvasKonvaClient'), { ssr: false });
+const CanvasKonvaClient = dynamic(() => import('../../components/CanvasKonvaClient'), { ssr: false });
 
 export default function CanvasClient() {
   const searchParams = useSearchParams();
@@ -93,7 +49,7 @@ export default function CanvasClient() {
   // Track selected variant (by key or index)
   const [selectedVariantKey, setSelectedVariantKey] = useState<string | null>(null);
   // Canvas state
-  const [placedLogos, setPlacedLogos] = useState<any[]>([]);
+  const [placedLogos, setPlacedLogos] = useState<CanvasLogo[]>([]);
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>(null);
   // Hydrate from project if projectId is present
   useEffect(() => {
@@ -173,10 +129,6 @@ export default function CanvasClient() {
     stageHeight = mockupDrawHeight;
   }
 
-  // Add padding to the Stage and position the image inside
-  const paddedStageWidth = stageWidth + 2 * padding;
-  const paddedStageHeight = stageHeight + 2 * padding;
-
   // Prevent scroll on this page
   useEffect(() => {
     const prevBodyOverflow = document.body.style.overflow;
@@ -188,6 +140,8 @@ export default function CanvasClient() {
       document.documentElement.style.overflow = prevHtmlOverflow;
     };
   }, []);
+
+  const exportRef = useRef<((format: 'png' | 'jpg' | 'tiff') => void) | null>(null);
 
   async function handleLogoSelect(logoUrl: string) {
     if (placedLogos.some(l => l.image === logoUrl)) return;
@@ -304,33 +258,12 @@ export default function CanvasClient() {
     }
   }
 
-  function updateLogo(id: string, updates: Partial<any>) {
-    setPlacedLogos((prev: any[]) => prev.map(l => l.id === id ? { ...l, ...updates } : l));
+  function updateLogo(id: string, updates: Partial<CanvasLogo>) {
+    setPlacedLogos((prev: CanvasLogo[]) => prev.map(l => l.id === id ? { ...l, ...updates } : l));
   }
 
   // For rendering in sidebar, pass image URLs
   const placedLogoUrls = placedLogos.map(l => l.image);
-
-  function handleExport(format: 'png' | 'jpg' | 'tiff') {
-    if (!stageRef.current) return;
-    let mimeType = 'image/png';
-    let ext = 'png';
-    if (format === 'jpg') { mimeType = 'image/jpeg'; ext = 'jpg'; }
-    if (format === 'tiff') { mimeType = 'image/tiff'; ext = 'tiff'; }
-    // Export only the mockup area (crop out the padding)
-    const dataURL = stageRef.current.toDataURL({
-      mimeType,
-      pixelRatio: 2,
-      x: padding,
-      y: padding,
-      width: mockupDrawWidth,
-      height: mockupDrawHeight,
-    });
-    const link = document.createElement('a');
-    link.download = `canvas-export.${ext}`;
-    link.href = dataURL;
-    link.click();
-  }
 
   // Autosave project (debounced)
   useEffect(() => {
@@ -349,7 +282,12 @@ export default function CanvasClient() {
       setProject(updated);
     }, 600);
     return () => clearTimeout(timeout);
-  }, [projectId, mockup, selectedVariantKey, placedLogos]);
+  }, [projectId, mockup, selectedVariantKey, placedLogos, project?.createdAt, project?.title]);
+
+  // Utility: replace all fill colors in SVG with a new color
+  function replaceSvgFill(svgText: string, newColor: string): string {
+    return svgText.replace(/fill=["']#(?:[0-9a-fA-F]{3}){1,2}["']/g, `fill=\"${newColor}\"`);
+  }
 
   return (
     <div
@@ -400,6 +338,7 @@ export default function CanvasClient() {
           mockupDrawWidth={mockupDrawWidth}
           mockupDrawHeight={mockupDrawHeight}
           padding={padding}
+          onExport={exportRef}
         />
       ) : null}
       {/* Add the improved sidebar component */}
@@ -446,7 +385,13 @@ export default function CanvasClient() {
           }
         }}
         opacity={selectedLogoId ? placedLogos.find((l: any) => l.id === selectedLogoId)?.opacity : 1}
-        blendMode={selectedLogoId ? placedLogos.find((l: any) => l.id === selectedLogoId)?.blendMode : 'normal'}
+        blendMode={(() => {
+          const mode = selectedLogoId ? placedLogos.find((l: any) => l.id === selectedLogoId)?.blendMode : undefined;
+          if (!mode) return undefined;
+          // Only allow valid GlobalCompositeOperation values
+          if (['source-over', 'multiply', 'overlay'].includes(mode)) return mode as any;
+          return 'source-over';
+        })()}
         onChangeOpacity={opacity => {
           if (selectedLogoId) updateLogo(selectedLogoId, { opacity });
         }}
@@ -458,7 +403,7 @@ export default function CanvasClient() {
           else if (mode === 'normal') gco = 'source-over';
           if (selectedLogoId) updateLogo(selectedLogoId, { blendMode: gco });
         }}
-        onExport={handleExport}
+        onExport={format => exportRef.current?.(format)}
         mockup={mockup}
         onSelectVariant={variant => {
           setSelectedVariantKey(variant.key);

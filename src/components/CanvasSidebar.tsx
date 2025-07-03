@@ -92,33 +92,6 @@ const OpacityBox = ({ value, style }: { value: string, style?: React.CSSProperti
   );
 };
 
-const BlendDropdown = ({ value, style }: { value: string, style?: React.CSSProperties }) => {
-  const [isHovered, setIsHovered] = React.useState(false);
-  return (
-    <div
-      style={{
-        ...BOX_STYLE,
-        borderRadius: 20,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        minWidth: 120,
-        paddingRight: 16,
-        cursor: 'pointer',
-        background: isHovered ? 'var(--button-secondary-hover)' : 'var(--button-secondary)',
-        ...style,
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <span>{value}</span>
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ marginLeft: 8 }}>
-        <path d="M6 8L10 12L14 8" stroke="#68686a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </div>
-  );
-};
-
 const BlendControls: React.FC<{
   opacity?: number;
   blendMode?: string;
@@ -229,7 +202,7 @@ const TransformControls: React.FC<{
   onChangeRotation?: (r: number) => void;
   onMirrorVertical?: () => void;
   onMirrorHorizontal?: () => void;
-}> = ({ width, height, rotation, onChangeWidth, onChangeHeight, onChangeRotation, onMirrorVertical, onMirrorHorizontal }) => (
+}> = ({ width, height, rotation, onChangeRotation, onMirrorVertical, onMirrorHorizontal }) => (
   <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: 16 }}>
     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
       <span style={{ fontWeight: 550, fontSize: '1.1rem' }}>Transform</span>
@@ -429,7 +402,7 @@ const CanvasSidebar: React.FC<CanvasSidebarProps> = ({ width, height, rotation, 
     >
       {/* Export Button with 12px horizontal padding */}
       <div style={{ padding: '0 12px' }}>
-        <ExportButton onExport={onExport!} />
+        <ExportButton onExport={onExport ?? (() => {})} />
       </div>
       {/* Separation line */}
       <div style={{ height: 0.5, background: 'var(--border-secondary)', width: '100%', margin: '0 0' }} />

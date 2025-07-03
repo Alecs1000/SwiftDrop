@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, RefObject } from 'react';
 import { Stage, Layer, Image as KonvaImage, Transformer } from 'react-konva';
 import useImage from 'use-image';
 
@@ -29,6 +29,7 @@ interface CanvasKonvaClientProps {
   mockupDrawWidth: number;
   mockupDrawHeight: number;
   padding: number;
+  onExport?: RefObject<((format: 'png' | 'jpg' | 'tiff') => void) | null>;
 }
 
 function LogoImage({ logo, selectedLogoId, setSelectedLogoId, updateLogo }: { logo: CanvasLogo; selectedLogoId: string | null; setSelectedLogoId: (id: string | null) => void; updateLogo: (id: string, updates: Partial<CanvasLogo>) => void }) {
@@ -46,7 +47,7 @@ function LogoImage({ logo, selectedLogoId, setSelectedLogoId, updateLogo }: { lo
       scaleY={logo.mirror ? -1 : 1}
       draggable
       opacity={logo.opacity ?? 1}
-      globalCompositeOperation={logo.blendMode ?? 'source-over'}
+      globalCompositeOperation={logo.blendMode as any ?? 'source-over'}
       onClick={() => setSelectedLogoId(logo.id)}
       onTap={() => setSelectedLogoId(logo.id)}
       onDragEnd={e => updateLogo(logo.id, { x: e.target.x(), y: e.target.y() })}
@@ -83,9 +84,39 @@ const CanvasKonvaClient: React.FC<CanvasKonvaClientProps> = ({
   mockupDrawWidth,
   mockupDrawHeight,
   padding,
+  onExport,
 }) => {
   const transformerRef = useRef<any>(null);
   const stageRef = useRef<any>(null);
+
+  // Export logic here
+  const handleExport = (format: 'png' | 'jpg' | 'tiff') => {
+    if (!stageRef.current) return;
+    let mimeType = 'image/png';
+    let ext = 'png';
+    if (format === 'jpg') { mimeType = 'image/jpeg'; ext = 'jpg'; }
+    if (format === 'tiff') { mimeType = 'image/tiff'; ext = 'tiff'; }
+    // Export only the mockup area (crop out the padding)
+    const dataURL = stageRef.current.toDataURL({
+      mimeType,
+      pixelRatio: 2,
+      x: padding,
+      y: padding,
+      width: mockupDrawWidth,
+      height: mockupDrawHeight,
+    });
+    const link = document.createElement('a');
+    link.download = `canvas-export.${ext}`;
+    link.href = dataURL;
+    link.click();
+  };
+
+  // Expose export to parent
+  React.useEffect(() => {
+    if (onExport && typeof handleExport === 'function') {
+      onExport.current = handleExport;
+    }
+  }, [onExport, mockupDrawWidth, mockupDrawHeight, padding, stageRef.current]);
 
   React.useEffect(() => {
     if (transformerRef.current && selectedLogoId) {
