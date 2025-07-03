@@ -1,0 +1,246 @@
+{
+  "colors": {
+    "Orange": {
+      "100": {
+        "value": "#f6f2ee",
+        "type": "color"
+      },
+      "200": {
+        "value": "#ebdbcb",
+        "type": "color"
+      },
+      "300": {
+        "value": "#e0bc9a",
+        "type": "color"
+      },
+      "400": {
+        "value": "#d7975b",
+        "type": "color"
+      },
+      "500": {
+        "value": "#df7817",
+        "type": "color"
+      },
+      "600": {
+        "value": "#af5c0e",
+        "type": "color"
+      },
+      "700": {
+        "value": "#824307",
+        "type": "color"
+      },
+      "800": {
+        "value": "#592d03",
+        "type": "color"
+      }
+    },
+    "Neutrals": {
+      "0": {
+        "value": "#ffffff",
+        "type": "color"
+      },
+      "100": {
+        "value": "#f9f9fa",
+        "type": "color"
+      },
+      "150": {
+        "value": "#f2f2f2",
+        "type": "color"
+      },
+      "200": {
+        "value": "#e1e1e2",
+        "type": "color"
+      },
+      "300": {
+        "value": "#c9c9ca",
+        "type": "color"
+      },
+      "400": {
+        "value": "#bfbfc0",
+        "type": "color"
+      },
+      "500": {
+        "value": "#808082",
+        "type": "color"
+      },
+      "600": {
+        "value": "#68686a",
+        "type": "color"
+      },
+      "700": {
+        "value": "#505052",
+        "type": "color"
+      },
+      "800": {
+        "value": "#2d2d2f",
+        "type": "color"
+      },
+      "900": {
+        "value": "#1f1f1f",
+        "type": "color"
+      },
+      "1000": {
+        "value": "#000000",
+        "type": "color"
+      }
+    },
+    "Magentas": {
+      "100": {
+        "value": "#f8f5f7",
+        "type": "color"
+      },
+      "200": {
+        "value": "#f2e2ea",
+        "type": "color"
+      },
+      "300": {
+        "value": "#efc1d7",
+        "type": "color"
+      },
+      "400": {
+        "value": "#f39ac3",
+        "type": "color"
+      },
+      "500": {
+        "value": "#ff71b3",
+        "type": "color"
+      },
+      "600": {
+        "value": "#ef4293",
+        "type": "color"
+      },
+      "700": {
+        "value": "#d3176f",
+        "type": "color"
+      },
+      "800": {
+        "value": "#8e144d",
+        "type": "color"
+      }
+    },
+    "blue": {
+      "100": {
+        "value": "#e0f8fd",
+        "type": "color"
+      },
+      "200": {
+        "value": "#b3ecfa",
+        "type": "color"
+      },
+      "300": {
+        "value": "#80def7",
+        "type": "color"
+      },
+      "400": {
+        "value": "#4dd0f3",
+        "type": "color"
+      },
+      "500": {
+        "value": "#20bfef",
+        "type": "color"
+      },
+      "600": {
+        "value": "#1a9cc0",
+        "type": "color"
+      },
+      "700": {
+        "value": "#157a92",
+        "type": "color"
+      },
+      "800": {
+        "value": "#105a68",
+        "type": "color"
+      }
+    }
+  },
+  "toast": {
+    "grid": {
+      "value": "true",
+      "type": "boolean"
+    },
+    "list": {
+      "value": "false",
+      "type": "boolean"
+    }
+  },
+  "spacing": {
+    "1": {
+      "value": "0.5rem",
+      "type": "dimension"
+    },
+    "2": {
+      "value": "0.75rem",
+      "type": "dimension"
+    },
+    "3": {
+      "value": "1rem",
+      "type": "dimension"
+    },
+    "4": {
+      "value": "1.25rem",
+      "type": "dimension"
+    },
+    "5": {
+      "value": "1.5rem",
+      "type": "dimension"
+    },
+    "6": {
+      "value": "2rem",
+      "type": "dimension"
+    },
+    "7": {
+      "value": "2.5rem",
+      "type": "dimension"
+    },
+    "8": {
+      "value": "3rem",
+      "type": "dimension"
+    },
+    "9": {
+      "value": "4rem",
+      "type": "dimension"
+    },
+    "10": {
+      "value": "4.5rem",
+      "type": "dimension"
+    },
+    ",5": {
+      "value": "0.25rem",
+      "type": "dimension"
+    }
+  },
+  "corners": {
+    "none": {
+      "value": "0rem",
+      "type": "dimension"
+    },
+    "xs": {
+      "value": "0.25rem",
+      "type": "dimension"
+    },
+    "sm": {
+      "value": "0.5rem",
+      "type": "dimension"
+    },
+    "md": {
+      "value": "0.75rem",
+      "type": "dimension"
+    },
+    "lg": {
+      "value": "1rem",
+      "type": "dimension"
+    },
+    "xl": {
+      "value": "2rem",
+      "type": "dimension"
+    },
+    "2xl": {
+      "value": "8rem",
+      "type": "dimension"
+    },
+    "3xl": {
+      "value": "22.5rem",
+      "type": "dimension"
+    }
+  }
+}

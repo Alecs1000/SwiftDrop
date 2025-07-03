@@ -1,8 +1,189 @@
 @import "tailwindcss";
 
+/* Light Theme (default) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surface Colors */
+  --surface-primary: #f9f9fa;
+  --surface-minimal: #ffffff;
+  --surface-secondary: #f2f2f2;
+  --surface-contrast: #2d2d2f;
+  --surface-heavy-contrast: #1f1f1f;
+  --surface-invert: #1f1f1f;
+  --surface-brand: #df7817;
+  --surface-brand-secondary: #f6f2ee;
+  --surface-brand-contrast: #824307;
+  --surface-brand-heavy-contrast: #592d03;
+  --surface-positive: #f8f5f7;
+  --surface-negative: #f8f5f7;
+  --surface-user-orange-1: #d7975b;
+  --surface-user-purple-1: #f39ac3;
+  --surface-user-blue-1: #4dd0f3;
+  --surface-primary-lowopacity: #f9f9fa00;
+
+  /* Component Colors */
+  --button-primary: #df7817;
+  --button-primary-hover: #d7975b;
+  --button-primary-focused: #df7817;
+  --button-primary-pressed: #af5c0e;
+  --button-secondary: #f2f2f2;
+  --button-secondary-hover: #e1e1e2;
+  --button-secondary-focused: #f9f9fa;
+  --button-secondary-pressed: #c9c9ca;
+  --disabled: #e1e1e2;
+
+  /* Text Colors */
+  --text-primary: #1f1f1f;
+  --text-secondary: #505052;
+  --text-contrast: #f9f9fa;
+  --text-brand: #df7817;
+
+  /* Border Colors */
+  --border-primary: #e1e1e2;
+  --border-secondary: #bfbfc0;
+  --border-invert: #2d2d2f;
+  --border-brand: #df7817;
+
+  /* Icon Colors */
+  --icon-primary: #1f1f1f;
+  --icon-invert: #f9f9fa;
+  --icon-positive: #ef4293;
+  --icon-brand: #df7817;
+  --icon-secondary: #68686a;
+
+  /* Icon Filters */
+  --icon-invert-filter: brightness(0) invert(1);
+
+  /* Spacing */
+  --spacing-none: 0rem;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.75rem;
+  --spacing-lg: 1rem;
+  --spacing-xl: 1.5rem;
+  --spacing-2xl: 2rem;
+  --spacing-3xl: 3rem;
+
+  /* Legacy support */
+  --background: var(--surface-minimal);
+  --foreground: var(--text-primary);
+}
+
+/* Dark Theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Surface Colors */
+    --surface-primary: #1f1f1f;
+    --surface-minimal: #000000;
+    --surface-secondary: #2d2d2f;
+    --surface-contrast: #bfbfc0;
+    --surface-heavy-contrast: #f9f9fa;
+    --surface-invert: #f9f9fa;
+    --surface-brand: #df7817;
+    --surface-brand-secondary: #f6f2ee;
+    --surface-brand-contrast: #824307;
+    --surface-brand-heavy-contrast: #592d03;
+    --surface-positive: #f8f5f7;
+    --surface-negative: #f8f5f7;
+    --surface-user-orange-1: #d7975b;
+    --surface-user-purple-1: #f39ac3;
+    --surface-user-blue-1: #4dd0f3;
+    --surface-primary-lowopacity: #1f1f1f00;
+
+    /* Component Colors */
+    --button-primary: #df7817;
+    --button-primary-hover: #d7975b;
+    --button-primary-focused: #df7817;
+    --button-primary-pressed: #af5c0e;
+    --button-secondary: #2d2d2f;
+    --button-secondary-hover: #505052;
+    --button-secondary-focused: #1f1f1f;
+    --button-secondary-pressed: #505052;
+    --disabled: #e1e1e2;
+
+    /* Text Colors */
+    --text-primary: #f9f9fa;
+    --text-secondary: #bfbfc0;
+    --text-contrast: #1f1f1f;
+    --text-brand: #df7817;
+
+    /* Border Colors */
+    --border-primary: #2d2d2f;
+    --border-secondary: #505052;
+    --border-invert: #e1e1e2;
+    --border-brand: #df7817;
+
+    /* Icon Colors */
+    --icon-primary: #f9f9fa;
+    --icon-invert: #1f1f1f;
+    --icon-positive: #ef4293;
+    --icon-brand: #df7817;
+    --icon-secondary: #bfbfc0;
+
+    /* Icon Filters */
+    --icon-invert-filter: brightness(0) invert(0);
+
+    /* Legacy support */
+    --background: var(--surface-minimal);
+    --foreground: var(--text-primary);
+  }
+}
+
+/* Manual dark mode class for user preference */
+[data-theme="dark"] {
+  /* Surface Colors */
+  --surface-primary: #1f1f1f;
+  --surface-minimal: #000000;
+  --surface-secondary: #2d2d2f;
+  --surface-contrast: #bfbfc0;
+  --surface-heavy-contrast: #f9f9fa;
+  --surface-invert: #f9f9fa;
+  --surface-brand: #df7817;
+  --surface-brand-secondary: #f6f2ee;
+  --surface-brand-contrast: #824307;
+  --surface-brand-heavy-contrast: #592d03;
+  --surface-positive: #f8f5f7;
+  --surface-negative: #f8f5f7;
+  --surface-user-orange-1: #d7975b;
+  --surface-user-purple-1: #f39ac3;
+  --surface-user-blue-1: #4dd0f3;
+  --surface-primary-lowopacity: #1f1f1f00;
+
+  /* Component Colors */
+  --button-primary: #df7817;
+  --button-primary-hover: #d7975b;
+  --button-primary-focused: #df7817;
+  --button-primary-pressed: #af5c0e;
+  --button-secondary: #2d2d2f;
+  --button-secondary-hover: #505052;
+  --button-secondary-focused: #1f1f1f;
+  --button-secondary-pressed: #505052;
+  --disabled: #e1e1e2;
+
+  /* Text Colors */
+  --text-primary: #f9f9fa;
+  --text-secondary: #bfbfc0;
+  --text-contrast: #1f1f1f;
+  --text-brand: #df7817;
+
+  /* Border Colors */
+  --border-primary: #2d2d2f;
+  --border-secondary: #505052;
+  --border-invert: #e1e1e2;
+  --border-brand: #df7817;
+
+  /* Icon Colors */
+  --icon-primary: #f9f9fa;
+  --icon-invert: #1f1f1f;
+  --icon-positive: #ef4293;
+  --icon-brand: #df7817;
+  --icon-secondary: #bfbfc0;
+
+  /* Icon Filters */
+  --icon-invert-filter: brightness(0) invert(0);
+
+  /* Legacy support */
+  --background: var(--surface-minimal);
+  --foreground: var(--text-primary);
 }
 
 @theme inline {
@@ -10,13 +191,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {

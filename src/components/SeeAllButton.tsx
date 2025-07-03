@@ -1,0 +1,30 @@
+import React from 'react';
+
+export default function SeeAllButton({ onClick }: { onClick?: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
+        background: 'var(--button-secondary)',
+        color: 'var(--text-secondary)',
+        border: 'none',
+        borderRadius: 9999,
+        fontSize: '0.8rem',
+        fontWeight: 500,
+        padding: '8px 12px',
+        cursor: 'pointer',
+        transition: 'background 0.15s',
+      }}
+      onMouseOver={e => (e.currentTarget.style.background = 'var(--button-secondary-hover)')}
+      onMouseOut={e => (e.currentTarget.style.background = 'var(--button-secondary)')}
+    >
+      <span>View all</span>
+      <svg width="12" height="10" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+        <path d="M7.08885 10C6.92946 10 6.79591 9.94503 6.68821 9.83509C6.58051 9.72955 6.52666 9.59543 6.52666 9.43272C6.52666 9.35356 6.53958 9.2788 6.56543 9.20844C6.59128 9.13368 6.63005 9.06992 6.68174 9.01715L8.12924 7.51319L10.8239 5L8.12924 2.48681L6.68174 0.98285C6.63005 0.930079 6.59128 0.868514 6.56543 0.798153C6.53958 0.723395 6.52666 0.646438 6.52666 0.567282C6.52666 0.404573 6.58051 0.270449 6.68821 0.164908C6.79591 0.0549692 6.92946 0 7.08885 0C7.1664 0 7.23963 0.0153914 7.30856 0.0461741C7.3818 0.0769569 7.45288 0.127529 7.52181 0.197889L11.8061 4.55805C11.9354 4.68558 12 4.83289 12 5C12 5.16711 11.9354 5.31442 11.8061 5.44195L7.50889 9.8153C7.38395 9.93843 7.24394 10 7.08885 10ZM0.568659 5.58707C0.400646 5.58707 0.262789 5.5321 0.155089 5.42216C0.0516963 5.31223 0 5.1715 0 5C0 4.8285 0.0516963 4.68777 0.155089 4.57784C0.262789 4.4679 0.400646 4.41293 0.568659 4.41293H8.74313L10.8239 4.54485C10.9575 4.55365 11.0652 4.59763 11.147 4.67678C11.2289 4.75594 11.2698 4.86368 11.2698 5C11.2698 5.13193 11.2289 5.23747 11.147 5.31662C11.0652 5.39578 10.9575 5.44195 10.8239 5.45514L8.74313 5.58707H0.568659Z" fill="var(--icon-secondary)"/>
+      </svg>
+    </button>
+  );
+} 
