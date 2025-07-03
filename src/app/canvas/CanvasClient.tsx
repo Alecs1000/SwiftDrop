@@ -81,6 +81,8 @@ function svgToDataUrl(svg: string) {
 }
 
 export default function CanvasClient() {
+  // Import Konva only on the client
+  const { Stage, Layer, Image: KonvaImage, Transformer } = require('react-konva');
   const searchParams = useSearchParams();
   const projectId = searchParams.get("projectId");
   const mockupId = searchParams.get("id");
