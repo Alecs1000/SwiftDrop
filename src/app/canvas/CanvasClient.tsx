@@ -11,6 +11,7 @@ import LeftSidebar from '../../components/LeftSidebar';
 import { BrandCtaButton } from '../../components/BrandCtaButton';
 import { loadProject, saveProject } from '../../lib/projectStorage';
 import { CanvasProject } from '../../lib/project';
+import dynamic from 'next/dynamic';
 
 // Logo instance type
 interface CanvasLogo {
@@ -80,9 +81,9 @@ function svgToDataUrl(svg: string) {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
 }
 
+const CanvasKonvaClient = dynamic(() => import('./CanvasKonvaClient'), { ssr: false });
+
 export default function CanvasClient() {
-  // Import Konva only on the client
-  const { Stage, Layer, Image: KonvaImage, Transformer } = require('react-konva');
   const searchParams = useSearchParams();
   const projectId = searchParams.get("projectId");
   const mockupId = searchParams.get("id");
@@ -120,8 +121,6 @@ export default function CanvasClient() {
   }
   const [mockupNaturalSize, setMockupNaturalSize] = useState<{ width: number; height: number } | null>(null);
   const [mockupKonvaImg] = useImage(selectedImage || '', 'anonymous');
-  const transformerRef = useRef<any>(null);
-  const stageRef = useRef<any>(null);
 
   // When the mockup image loads, set its natural size
   useEffect(() => {
@@ -189,18 +188,6 @@ export default function CanvasClient() {
       document.documentElement.style.overflow = prevHtmlOverflow;
     };
   }, []);
-
-  // Update transformer when selection changes
-  useEffect(() => {
-    if (transformerRef.current && selectedLogoId) {
-      const stage = stageRef.current;
-      const logoNode = stage.findOne(`#logo-${selectedLogoId}`);
-      if (logoNode) {
-        transformerRef.current.nodes([logoNode]);
-        transformerRef.current.getLayer().batchDraw();
-      }
-    }
-  }, [selectedLogoId, placedLogos]);
 
   async function handleLogoSelect(logoUrl: string) {
     if (placedLogos.some(l => l.image === logoUrl)) return;
@@ -324,49 +311,6 @@ export default function CanvasClient() {
   // For rendering in sidebar, pass image URLs
   const placedLogoUrls = placedLogos.map(l => l.image);
 
-  // Render each logo on the canvas
-  function LogoImage({ logo }: { logo: CanvasLogo }) {
-    const [img] = useImage(logo.svgDataUrl || logo.image, 'anonymous');
-    return (
-      <KonvaImage
-        id={`logo-${logo.id}`}
-        image={img}
-        x={logo.x}
-        y={logo.y}
-        width={logo.width}
-        height={logo.height}
-        rotation={logo.rotation}
-        scaleX={logo.flip ? -1 : 1}
-        scaleY={logo.mirror ? -1 : 1}
-        draggable
-        opacity={logo.opacity ?? 1}
-        globalCompositeOperation={logo.blendMode ?? 'source-over'}
-        onClick={() => setSelectedLogoId(logo.id)}
-        onTap={() => setSelectedLogoId(logo.id)}
-        onDragEnd={e => updateLogo(logo.id, { x: e.target.x(), y: e.target.y() })}
-        onTransformEnd={e => {
-          const node = e.target;
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
-          updateLogo(logo.id, {
-            x: node.x(),
-            y: node.y(),
-            width: Math.max(20, node.width() * Math.abs(scaleX)),
-            height: Math.max(20, node.height() * Math.abs(scaleY)),
-            rotation: node.rotation(),
-          });
-          node.scaleX(logo.flip ? -1 : 1);
-          node.scaleY(logo.mirror ? -1 : 1);
-        }}
-        onDblClick={() => setSelectedLogoId(logo.id)}
-        stroke={selectedLogoId === logo.id ? '#df7817' : undefined}
-        strokeWidth={selectedLogoId === logo.id ? 2 : 0}
-        shadowForStrokeEnabled={false}
-        perfectDrawEnabled={false}
-      />
-    );
-  }
-
   function handleExport(format: 'png' | 'jpg' | 'tiff') {
     if (!stageRef.current) return;
     let mimeType = 'image/png';
@@ -444,49 +388,19 @@ export default function CanvasClient() {
           saveProject(updated);
         }}
       />
-      {/* Centered Canvas */}
+      {/* Centered Canvas (client-only) */}
       {selectedImage && mockupKonvaImg ? (
-        <Stage
-          ref={stageRef}
-          width={paddedStageWidth}
-          height={paddedStageHeight}
-          style={{ background: 'transparent' }}
-          onMouseDown={e => {
-            // Deselect if click on empty area (stage)
-            if (e.target === e.target.getStage()) {
-              setSelectedLogoId(null);
-            }
-          }}
-        >
-          <Layer>
-            <KonvaImage
-              image={mockupKonvaImg}
-              width={mockupDrawWidth}
-              height={mockupDrawHeight}
-              x={padding}
-              y={padding}
-              listening={false}
-              cornerRadius={12}
-            />
-            {placedLogos.map(logo => (
-              <LogoImage key={logo.id} logo={logo} />
-            ))}
-            {selectedLogoId && (
-              <Transformer
-                ref={transformerRef}
-                rotateEnabled
-                enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right']}
-                boundBoxFunc={(oldBox, newBox) => {
-                  // Limit resize to minimum size
-                  if (newBox.width < 20 || newBox.height < 20) {
-                    return oldBox;
-                  }
-                  return newBox;
-                }}
-              />
-            )}
-          </Layer>
-        </Stage>
+        <CanvasKonvaClient
+          placedLogos={placedLogos}
+          selectedLogoId={selectedLogoId}
+          setSelectedLogoId={setSelectedLogoId}
+          updateLogo={updateLogo}
+          mockupKonvaImg={mockupKonvaImg}
+          selectedImage={selectedImage}
+          mockupDrawWidth={mockupDrawWidth}
+          mockupDrawHeight={mockupDrawHeight}
+          padding={padding}
+        />
       ) : null}
       {/* Add the improved sidebar component */}
       <CanvasSidebar
