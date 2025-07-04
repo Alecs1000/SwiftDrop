@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { MockupCard } from './MockupCard';
 
-export default function SupabaseMockupGallery() {
+interface SupabaseMockupGalleryProps {
+  category?: string;
+  search?: string;
+}
+
+export default function SupabaseMockupGallery({ category = 'all', search = '' }: SupabaseMockupGalleryProps) {
   const [mockups, setMockups] = useState<any[]>([]);
 
   useEffect(() => {
@@ -12,6 +17,12 @@ export default function SupabaseMockupGallery() {
     };
     fetchMockups();
   }, []);
+
+  const filtered = mockups.filter((mockup) => {
+    const matchesCategory = category === 'all' || (mockup.category && mockup.category.toLowerCase() === category.toLowerCase());
+    const matchesSearch = !search || (mockup.name && mockup.name.toLowerCase().includes(search.toLowerCase())) || (mockup.description && mockup.description.toLowerCase().includes(search.toLowerCase()));
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div style={{
@@ -24,7 +35,7 @@ export default function SupabaseMockupGallery() {
       width: '100%',
       alignItems: 'start',
     }}>
-      {mockups.map((mockup) => {
+      {filtered.map((mockup) => {
         const { data: urlData } = supabase.storage.from('mockups').getPublicUrl(mockup.image_path);
         return (
           <MockupCard

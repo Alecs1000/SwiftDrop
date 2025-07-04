@@ -29,6 +29,7 @@ function generateUUID() {
 export default function LibraryPage() {
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   function handleMockupClick(mockupId: string) {
     const id = generateUUID();
@@ -52,8 +53,28 @@ export default function LibraryPage() {
       <div style={{ position: 'absolute', top: 24, right: 24, zIndex: 10 }}>
         <SearchBar value={search} onChange={e => setSearch(e.target.value)} />
       </div>
-      <div style={{ flex: 1 }}>
-        <SupabaseMockupGallery />
+      <div className="ml-64" style={{ paddingTop: '24px', paddingLeft: '32px' }}>
+        <h5 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
+          Library
+        </h5>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', marginTop: '24px' }}>
+          {/* Filter Buttons Sidebar */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start' }}>
+            {filterCategories.map(cat => (
+              <FilterButton
+                key={cat.key}
+                active={cat.key === selectedCategory}
+                onClick={() => setSelectedCategory(cat.key)}
+              >
+                {cat.label}
+              </FilterButton>
+            ))}
+          </div>
+          {/* Cards Grid */}
+          <div style={{ marginLeft: '32px', paddingRight: '24px', flex: 1 }}>
+            <SupabaseMockupGallery category={selectedCategory} search={search} />
+          </div>
+        </div>
       </div>
     </div>
   );
