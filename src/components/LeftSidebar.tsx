@@ -3,14 +3,15 @@ import { GridIcon, PlusIcon, ArrowIcon, ListIcon } from './icons/ListIcons';
 import { NavigationIconLibrary } from './icons/NavigationIcons';
 import { SearchBar } from './SearchBar';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 
 const iconStyle = { width: 20, height: 20, display: 'inline-block', verticalAlign: 'middle' };
 const sectionLine = <div style={{ height: 1, background: 'var(--border-secondary)', width: '100%', margin: '12px 0 0 0' }} />;
 
 interface LeftSidebarProps {
-  onLogoSelect?: (logoUrl: string) => void;
-  placedLogos?: string[];
-  onRemoveLogo?: (logoUrl: string) => void;
+  onLogoSelect?: (logoUrl: string, logoMeta?: { name?: string; id?: string }) => void;
+  placedLogos?: any[];
+  onRemoveLogo?: (logoIdOrUrl: string, logoUrl?: string) => void;
   projectTitle?: string;
   onProjectTitleChange?: (title: string) => void;
 }
@@ -18,7 +19,7 @@ interface LeftSidebarProps {
 const LeftSidebar: React.FC<LeftSidebarProps> = ({ onLogoSelect, placedLogos = [], onRemoveLogo, projectTitle = 'Untitled project', onProjectTitleChange }) => {
   const [searchValue, setSearchValue] = useState('');
   const [activeTab, setActiveTab] = useState<'levels' | 'assets'>('levels');
-  const [logos, setLogos] = useState<string[]>([]);
+  const [logos, setLogos] = useState<any[]>([]);
   const [assetView, setAssetView] = useState<'grid' | 'list'>('grid');
   const router = useRouter();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -27,15 +28,18 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onLogoSelect, placedLogos = [
 
   useEffect(() => {
     if (activeTab === 'assets') {
-      fetch('/api/list-logos')
-        .then(res => res.json())
-        .then(data => setLogos(data.logos || []));
+      // Fetch logos from Supabase
+      const fetchLogos = async () => {
+        const { data, error } = await supabase.from('logos').select('*').order('created_at', { ascending: false });
+        if (data) setLogos(data);
+      };
+      fetchLogos();
     }
   }, [activeTab]);
 
   useEffect(() => { setTitleValue(projectTitle); }, [projectTitle]);
 
-  const filteredLogos = logos.filter(filename => filename.toLowerCase().includes(searchValue.toLowerCase()));
+  const filteredLogos = logos.filter(logo => logo.name.toLowerCase().includes(searchValue.toLowerCase()));
 
   function handlePlusClick() {
     if (activeTab === 'levels') {
@@ -45,12 +49,27 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onLogoSelect, placedLogos = [
     }
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    // TODO: Implement upload logic here (e.g., POST to /api/upload-logo)
-    // After upload, refresh logos list
-    // For now, just clear the input
+    const filePath = `${Date.now()}-${file.name}`;
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage.from('logos').upload(filePath, file);
+    if (uploadError) {
+      alert('Error uploading logo: ' + uploadError.message);
+      e.target.value = '';
+      return;
+    }
+    // Insert metadata into the logos table
+    const { data: dbData, error: dbError } = await supabase.from('logos').insert([{ name: file.name, image_path: filePath }]);
+    if (dbError) {
+      alert('Error saving logo metadata: ' + dbError.message);
+      e.target.value = '';
+      return;
+    }
+    // Refresh logos list
+    const { data: newLogos } = await supabase.from('logos').select('*').order('created_at', { ascending: false });
+    setLogos(newLogos || []);
     e.target.value = '';
   }
 
@@ -218,9 +237,9 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onLogoSelect, placedLogos = [
           {placedLogos.length === 0 ? (
             <span style={{ color: '#68686a', fontSize: 15 }}>No logos placed yet.</span>
           ) : (
-            placedLogos.map(filename => (
+            placedLogos.map((logo: any) => (
               <div
-                key={filename}
+                key={logo.id || logo.image}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, position: 'relative' }}
                 onMouseEnter={e => {
                   const xBtn = e.currentTarget.querySelector('.remove-x');
@@ -232,13 +251,13 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onLogoSelect, placedLogos = [
                 }}
               >
                 <div style={{ width: 24, height: 24, borderRadius: 6, background: '#F6F6F6', overflow: 'hidden' }}>
-                  <img src={filename} alt={filename} style={{ width: 24, height: 24, objectFit: 'contain', borderRadius: 6 }} />
+                  <img src={logo.image} alt={logo.name || logo.image} style={{ width: 24, height: 24, objectFit: 'contain', borderRadius: 6 }} />
                 </div>
-                <span style={{ fontSize: 16, color: '#68686a', wordBreak: 'break-all' }}>{filename.split('/').pop()}</span>
+                <span style={{ fontSize: 16, color: '#68686a', wordBreak: 'break-all' }}>{logo.name || logo.image.split('/').pop()}</span>
                 <button
                   className="remove-x"
                   style={{ display: 'none' }}
-                  onClick={e => { e.stopPropagation(); onRemoveLogo && onRemoveLogo(filename); }}
+                  onClick={e => { e.stopPropagation(); onRemoveLogo && onRemoveLogo(logo.id, logo.image); }}
                   aria-label="Remove logo"
                 >
                   ×
@@ -254,11 +273,14 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onLogoSelect, placedLogos = [
               {filteredLogos.length === 0 ? (
                 <span style={{ color: '#68686a', fontSize: 15, gridColumn: '1 / -1' }}>No logos uploaded.</span>
               ) : (
-                filteredLogos.map(filename => (
-                  <div key={filename} style={{ borderRadius: 12, background: '#fff', border: '1px solid var(--border-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 64, cursor: 'pointer' }} onClick={() => onLogoSelect && onLogoSelect(`/logos/${filename}`)}>
-                    <img src={`/logos/${filename}`} alt={filename} style={{ maxWidth: 40, maxHeight: 40, objectFit: 'contain' }} />
-                  </div>
-                ))
+                filteredLogos.map(logo => {
+                  const { data: urlData } = supabase.storage.from('logos').getPublicUrl(logo.image_path);
+                  return (
+                    <div key={logo.id} style={{ borderRadius: 12, background: '#fff', border: '1px solid var(--border-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 64, cursor: 'pointer' }} onClick={() => onLogoSelect && onLogoSelect(urlData.publicUrl, { name: logo.name, id: logo.id })}>
+                      <img src={urlData.publicUrl} alt={logo.name} style={{ maxWidth: 40, maxHeight: 40, objectFit: 'contain' }} />
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
@@ -267,12 +289,15 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onLogoSelect, placedLogos = [
             {filteredLogos.length === 0 ? (
               <span style={{ color: '#68686a', fontSize: 15 }}>No logos uploaded.</span>
             ) : (
-              filteredLogos.map(filename => (
-                <div key={filename} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => onLogoSelect && onLogoSelect(`/logos/${filename}`)}>
-                  <img src={`/logos/${filename}`} alt={filename} style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6, background: '#fff', border: '1px solid var(--border-secondary)' }} />
-                  <span style={{ fontSize: 15, color: '#68686a', wordBreak: 'break-all' }}>{filename}</span>
-                </div>
-              ))
+              filteredLogos.map(logo => {
+                const { data: urlData } = supabase.storage.from('logos').getPublicUrl(logo.image_path);
+                return (
+                  <div key={logo.id} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => onLogoSelect && onLogoSelect(urlData.publicUrl, { name: logo.name, id: logo.id })}>
+                    <img src={urlData.publicUrl} alt={logo.name} style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6, background: '#fff', border: '1px solid var(--border-secondary)' }} />
+                    <span style={{ fontSize: 15, color: '#68686a', wordBreak: 'break-all' }}>{logo.name}</span>
+                  </div>
+                );
+              })
             )}
           </div>
         )

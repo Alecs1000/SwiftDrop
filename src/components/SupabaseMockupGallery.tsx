@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { MockupCard } from './MockupCard';
+import { useRouter } from 'next/navigation';
 
 interface SupabaseMockupGalleryProps {
   category?: string;
@@ -9,11 +10,14 @@ interface SupabaseMockupGalleryProps {
 
 export default function SupabaseMockupGallery({ category = 'all', search = '' }: SupabaseMockupGalleryProps) {
   const [mockups, setMockups] = useState<any[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchMockups = async () => {
       const { data, error } = await supabase.from('mockups').select('*');
       if (data) setMockups(data);
+      if (error) console.error('Supabase fetch error:', error);
+      console.log('Fetched mockups:', data);
     };
     fetchMockups();
   }, []);
@@ -23,6 +27,8 @@ export default function SupabaseMockupGallery({ category = 'all', search = '' }:
     const matchesSearch = !search || (mockup.name && mockup.name.toLowerCase().includes(search.toLowerCase())) || (mockup.description && mockup.description.toLowerCase().includes(search.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
+
+  console.log('Filtered mockups:', filtered);
 
   return (
     <div style={{
@@ -43,6 +49,7 @@ export default function SupabaseMockupGallery({ category = 'all', search = '' }:
             id={mockup.id}
             image={urlData.publicUrl}
             title={mockup.name}
+            onClick={() => router.push(`/canvas?id=${mockup.id}`)}
           />
         );
       })}
